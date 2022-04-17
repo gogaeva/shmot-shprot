@@ -7,8 +7,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gogaeva/shmot-shprot/model"
-	"github.com/gogaeva/shmot-shprot/pkg/repository"
+	"github.com/gogaeva/shmot-shprot/internal/domain"
 )
 
 const (
@@ -17,25 +16,30 @@ const (
 	tokenTTL   = time.Hour * 12
 )
 
-type AuthService struct {
-	repo repository.Authorization
+type authRepository interface {
+	CreateUser(user domain.User) (uint, error)
+	GetUser(username, password string) (domain.User, error)
+}
+
+type Authorization struct {
+	repo authRepository
 }
 
 type tokenClaims struct {
 	jwt.StandardClaims
-	UserId int `json:"user_id"`
+	UserId uint `json:"user_id"`
 }
 
-func NewAuthService(repo repository.Authorization) *AuthService {
-	return &AuthService{repo: repo}
+func NewAuthorization(r authRepository) *Authorization {
+	return &Authorization{repo: r}
 }
 
-func (s *AuthService) CreateUser(user model.User) (int, error) {
+func (s *Authorization) CreateUser(user domain.User) (uint, error) {
 	user.Password = generatePasswordHash(user.Password)
 	return s.repo.CreateUser(user)
 }
 
-func (s *AuthService) GenerateToken(username, password string) (string, error) {
+func (s *Authorization) GenerateToken(username, password string) (string, error) {
 	user, err := s.repo.GetUser(username, generatePasswordHash(password))
 	if err != nil {
 		return "", err
@@ -51,7 +55,7 @@ func (s *AuthService) GenerateToken(username, password string) (string, error) {
 	return token.SignedString([]byte(signingKey))
 }
 
-func (s *AuthService) ParseToken(accessToken string) (int, error) {
+func (s *Authorization) ParseToken(accessToken string) (uint, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")

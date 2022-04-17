@@ -1,9 +1,9 @@
-package model
+package domain
 
 type Look struct {
-	Id               int    `json:"-"`
+	Id               uint   `json:"-"`
 	PhotoPath        string `json:"-"`
-	OwnerId          int    `json:"-"`
+	OwnerId          uint   `json:"-"`
 	Description      string `json:"description"`
 	Season           string `json:"season"`
 	TemperatureRange [2]int `json:"temperature_range"`

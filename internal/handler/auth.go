@@ -4,20 +4,35 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gogaeva/shmot-shprot/model"
+	"github.com/gogaeva/shmot-shprot/internal/domain"
 )
 
 // Принимает данные с клиента, отправляет их в слой бизнес логики, возвращает ответ
+type authorization interface {
+	CreateUser(user domain.User) (uint, error)
+	GenerateToken(username, password string) (string, error)
+	ParseToken(accessToken string) (uint, error)
+}
 
-func (h *Handler) signUp(c *gin.Context) {
-	var input model.User
+type AuthHandler struct {
+	service authorization
+}
+
+func NewAuthHandler(s authorization) *AuthHandler {
+	return &AuthHandler{
+		service: s,
+	}
+}
+
+func (h *AuthHandler) signUp(c *gin.Context) {
+	var input domain.User
 
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	id, err := h.services.Authorization.CreateUser(input)
+	id, err := h.service.CreateUser(input)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -33,7 +48,7 @@ type signInInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func (h *Handler) signIn(c *gin.Context) {
+func (h *AuthHandler) signIn(c *gin.Context) {
 	var input signInInput
 
 	if err := c.BindJSON(&input); err != nil {
@@ -41,7 +56,7 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	token, err := h.services.Authorization.GenerateToken(input.Nickname, input.Password)
+	token, err := h.service.GenerateToken(input.Nickname, input.Password)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

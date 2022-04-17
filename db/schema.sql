@@ -1,16 +1,16 @@
 CREATE TABLE users (
     id serial UNIQUE NOT NULL PRIMARY KEY,
-    nickname varchar(64) UNIQUE NOT NULL,
-    email varchar(256) UNIQUE NOT NULL,
-    password char(256) UNIQUE NOT NULL
+    nickname varchar UNIQUE NOT NULL,
+    email varchar UNIQUE NOT NULL,
+    password varchar UNIQUE NOT NULL
 );
 
 CREATE TABLE clothes (
     id serial UNIQUE NOT NULL PRIMARY KEY,
-    photo_id int UNIQUE NOT NULL,
+    photo_id varchar UNIQUE NOT NULL,
     owner_id int NOT NULL REFERENCES users(id),
-    class varchar(64),
-    brand varchar(64),
+    class varchar,
+    brand varchar,
     color int
 );
 --ALTER TABLE clothes ADD CONSTRAINT pkClothes PRIMARY KEY (id);
@@ -21,9 +21,9 @@ CREATE TABLE looks (
     photo_id int UNIQUE NOT NULL,
     owner_id int NOT NULL,
     description text,
-    season varchar(64),
+    season varchar,
     temperature_range int4range,
-    purpose varchar(64),
+    purpose varchar,
     priority int
 );
 --ALTER TABLE looks ADD CONSTRAINT pk_looks PRIMARY KEY (id);

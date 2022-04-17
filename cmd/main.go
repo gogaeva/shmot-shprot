@@ -4,16 +4,18 @@ import (
 	"log"
 	"os"
 
-	model "github.com/gogaeva/shmot-shprot"
-	"github.com/gogaeva/shmot-shprot/pkg/handler"
-	"github.com/gogaeva/shmot-shprot/pkg/repository"
-	"github.com/gogaeva/shmot-shprot/pkg/service"
+	//domain "github.com/gogaeva/shmot-shprot"
+	"github.com/gogaeva/shmot-shprot/internal/handler"
+	"github.com/gogaeva/shmot-shprot/internal/repository"
+	"github.com/gogaeva/shmot-shprot/internal/service"
 	"github.com/joho/godotenv"
 
-	_ "github.com/lib/pq"
-	//_ "github.com/jackc/pgx"
+	//_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/spf13/viper"
 )
+
+const storagePath = "/home/micromolecule1100/Documents/projects/ss_photos"
 
 func main() {
 	// handlers := new(handler.Handler)
@@ -37,10 +39,11 @@ func main() {
 		log.Fatalf("failed to initialize db: %s", err.Error())
 	}
 
-	repos := repository.NewRpository(db)
-	services := service.NewService(repos)
+	photoStore := repository.NewFileStore(storagePath)
+	repos := repository.NewRepository(db, photoStore)
+	services := service.NewServices(repos)
 	handlers := handler.NewHandler(services)
-	srv := new(model.Server)
+	srv := new(Server)
 	port := viper.GetString("port")
 	if err := srv.Run(port, handlers.InitRoutes()); err != nil {
 		log.Fatalf("error occured while running http server: %s", err.Error())

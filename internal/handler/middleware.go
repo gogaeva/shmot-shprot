@@ -12,7 +12,8 @@ const (
 	userCtx             = "userId"
 )
 
-func (h *Handler) userIdentity(c *gin.Context) {
+//func (h *Handler) userIdentity(c *gin.Context) {
+func (h *AuthHandler) userIdentity(c *gin.Context) {
 	header := c.GetHeader(authorizationHeader)
 	if header == "" {
 		newErrorResponse(c, http.StatusUnauthorized, "empty auth header")
@@ -26,7 +27,8 @@ func (h *Handler) userIdentity(c *gin.Context) {
 	}
 
 	//parse token
-	userId, err := h.services.Authorization.ParseToken(headerParts[1])
+	//userId, err := h.services.Authorization.ParseToken(headerParts[1])
+	userId, err := h.service.ParseToken(headerParts[1])
 	if err != nil {
 		newErrorResponse(c, http.StatusUnauthorized, err.Error())
 		return
